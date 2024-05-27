@@ -31,6 +31,13 @@ func i32tob(val uint32) []byte {
 	return r
 }
 
+func strtob(str string) []byte {
+	strAsBytes := []byte(str)
+	strAsBytes = append(strAsBytes, 0)
+
+	return strAsBytes
+}
+
 func writeModuleQuantity(target *os.File, quantity int) error {
 	log.Println("writing module count to target...")
 	written, err := target.Write(i32tob(uint32(quantity)))
@@ -61,7 +68,7 @@ func writeModule(target *os.File, spec ModuleSpec) error {
 	log.Printf("%d bytes written\n", written)
 
 	log.Print("writing module name to target...")
-	written, err = target.WriteString(moduleName)
+	written, err = target.Write(strtob(moduleName))
 	if err != nil {
 		return err
 	}
