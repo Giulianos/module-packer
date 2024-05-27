@@ -1,6 +1,7 @@
 package packer
 
 import (
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -41,7 +42,11 @@ func writeModuleQuantity(target *os.File, quantity int) error {
 }
 
 func writeModule(target *os.File, spec ModuleSpec) error {
-	log.Printf("reading module %s at %s to memory...", spec.Attributes["name"], spec.Path)
+	moduleName, hasNameAttribute := spec.Attributes["name"]
+	if !hasNameAttribute {
+		return errors.New("module must contain a name attribute")
+	}
+	log.Printf("reading module %s at %s to memory...", moduleName, spec.Path)
 	moduleBinary, err := os.ReadFile(spec.Path)
 	if err != nil {
 		return err
@@ -50,6 +55,13 @@ func writeModule(target *os.File, spec ModuleSpec) error {
 
 	log.Print("writing module size to target...")
 	written, err := target.Write(i32tob(uint32(len(moduleBinary))))
+	if err != nil {
+		return err
+	}
+	log.Printf("%d bytes written\n", written)
+
+	log.Print("writing module name to target...")
+	written, err = target.WriteString(moduleName)
 	if err != nil {
 		return err
 	}
